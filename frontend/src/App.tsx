@@ -7,7 +7,7 @@ import { LoginPage } from "./components/LoginPage";
 import { SignOutPage } from "./components/SignOutPage";
 import { clsx } from "clsx";
 
-const EXPIRY_HOURS = 18;
+const EXPIRY_HOURS = 12;
 
 function useHashRoute() {
   const [meetingId, setMeetingId] = useState<string | null>(() => {
