@@ -1,7 +1,17 @@
 import { Badge } from "@/components/ui/badge";
 import type { Meeting } from "../types";
-import { format } from "date-fns";
 import { clsx } from "clsx";
+
+function formatIST(date: Date): string {
+  return date.toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
 
 const statusConfig: Record<string, { label: string; className: string }> = {
   pending:    { label: "Researching…", className: "bg-yellow-100 text-yellow-800" },
@@ -11,9 +21,10 @@ const statusConfig: Record<string, { label: string; className: string }> = {
 };
 
 function getMeetingStatus(meeting: Meeting): { label: string; className: string } {
+  // Compare raw UTC timestamps — never use toZonedTime for comparisons
   const now = new Date();
-  const start = new Date(meeting.start_time);
-  const end = new Date(meeting.end_time);
+  const start = new Date(meeting.start_time.endsWith("Z") ? meeting.start_time : meeting.start_time + "Z");
+  const end = new Date(meeting.end_time.endsWith("Z") ? meeting.end_time : meeting.end_time + "Z");
 
   if (now >= start && now <= end) {
     return { label: "In progress", className: "bg-blue-100 text-blue-800" };
@@ -29,8 +40,13 @@ interface MeetingCardProps {
   onDelete: (id: string) => void;
 }
 
+function toUTC(s: string): Date {
+  // DB stores naive UTC — append Z so browser doesn't misread as local time
+  return new Date(s.endsWith("Z") ? s : s + "Z");
+}
+
 export function MeetingCard({ meeting, onDelete }: MeetingCardProps) {
-  const startTime = new Date(meeting.start_time);
+  const startTime = toUTC(meeting.start_time);
   const status = getMeetingStatus(meeting);
 
   const openDetail = () => {
@@ -63,7 +79,7 @@ export function MeetingCard({ meeting, onDelete }: MeetingCardProps) {
           {meeting.title}
         </p>
         <p className="text-xs text-muted-foreground mt-0.5">
-          {format(startTime, "MMM d · h:mm a")}
+          {formatIST(startTime)}
         </p>
       </div>
 

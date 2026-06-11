@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import type { Meeting, MeetingBriefStatus } from "../types";
 
-const WS_URL = "ws://localhost:8080/ws/meetings";
-const API_URL = "http://localhost:8080";
+const WS_URL = "wss://meeting-intel-backend-58260327471.us-central1.run.app/ws/meetings";
+const API_URL = "https://meeting-intel-backend-58260327471.us-central1.run.app";
 
 export function useLiveMeetings() {
   const [meetings, setMeetings] = useState<Meeting[]>([]);

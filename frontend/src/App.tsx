@@ -48,18 +48,21 @@ function Dashboard({ onSignOutClick }: { onSignOutClick: () => void }) {
     });
   };
 
+  // DB stores naive UTC — append Z so browser parses correctly
+  const toUTC = (s: string) => new Date(s.endsWith("Z") ? s : s + "Z");
+
   // Filter out meetings that are older than EXPIRY_HOURS after their scheduled start
   const now = new Date();
   const visibleMeetings = meetings.filter((m) => {
     if (dismissed.has(m.id)) return false;
-    const start = new Date(m.start_time);
+    const start = toUTC(m.start_time);
     const expiresAt = new Date(start.getTime() + EXPIRY_HOURS * 60 * 60 * 1000);
     return now < expiresAt;
   });
 
   // Split into upcoming/today vs past (within expiry window)
-  const upcomingMeetings = visibleMeetings.filter((m) => new Date(m.end_time) > now);
-  const recentMeetings = visibleMeetings.filter((m) => new Date(m.end_time) <= now);
+  const upcomingMeetings = visibleMeetings.filter((m) => toUTC(m.end_time) > now);
+  const recentMeetings = visibleMeetings.filter((m) => toUTC(m.end_time) <= now);
 
   return (
     <div className="min-h-screen bg-background">

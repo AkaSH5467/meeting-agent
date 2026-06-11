@@ -3,10 +3,9 @@ import { Badge } from "@/components/ui/badge";
 import { BriefContent } from "./BriefContent";
 import { MeetingCardSkeleton } from "./MeetingCardSkeleton";
 import type { Meeting } from "../types";
-import { format } from "date-fns";
 import { clsx } from "clsx";
 
-const API_URL = "http://localhost:8080";
+const API_URL = "https://meeting-intel-backend-58260327471.us-central1.run.app";
 
 const statusColors = {
   pending: "bg-yellow-100 text-yellow-800",
@@ -112,13 +111,13 @@ export function MeetingDetailPage({ meetingId, onBack }: Props) {
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <span>{format(startTime, "EEEE, MMMM d, yyyy")}</span>
+              <span>{startTime.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", weekday: "long", year: "numeric", month: "long", day: "numeric" })}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span>{format(startTime, "h:mm a")} – {format(endTime, "h:mm a")}</span>
+              <span>{startTime.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "numeric", minute: "2-digit", hour12: true })} – {endTime.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "numeric", minute: "2-digit", hour12: true })}</span>
             </div>
             {meeting.company_name && (
               <div className="flex items-center gap-1.5">
