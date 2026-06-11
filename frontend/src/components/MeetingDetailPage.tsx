@@ -73,8 +73,9 @@ export function MeetingDetailPage({ meetingId, onBack }: Props) {
     );
   }
 
-  const startTime = new Date(meeting.start_time);
-  const endTime = new Date(meeting.end_time);
+  const toUTC = (s: string) => new Date(s.endsWith("Z") ? s : s + "Z");
+  const startTime = toUTC(meeting.start_time);
+  const endTime = toUTC(meeting.end_time);
 
   return (
     <div className="min-h-screen bg-background">
@@ -102,7 +103,7 @@ export function MeetingDetailPage({ meetingId, onBack }: Props) {
           <div className="flex items-start justify-between gap-4">
             <h1 className="text-2xl font-bold leading-snug">{meeting.title}</h1>
             <Badge className={clsx(statusColors[meeting.brief_status], "shrink-0 text-xs capitalize")}>
-              {meeting.brief_status.replace("_", " ")}
+              {meeting.brief_status === "done" ? "Ready" : meeting.brief_status === "pending" ? "Researching…" : meeting.brief_status === "no_company" ? "No company" : "Error"}
             </Badge>
           </div>
 

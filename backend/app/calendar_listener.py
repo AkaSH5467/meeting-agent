@@ -130,8 +130,10 @@ async def research_and_broadcast(
     domain: str,
     meeting_title: str,
     attendees: list,
+    attempt: int = 1,
+    max_attempts: int = 3,
 ):
-    logger.info(f"[RESEARCH] Starting for {company_name} ({domain})")
+    logger.info(f"[RESEARCH] Starting for {company_name} ({domain}) attempt {attempt}/{max_attempts}")
     try:
         await ws_manager.broadcast(json.dumps({
             "meeting_id": meeting_id,
@@ -139,6 +141,9 @@ async def research_and_broadcast(
             "brief": None,
             "error_message": None,
         }))
+
+        # Stagger concurrent requests to avoid rate limits
+        await asyncio.sleep((attempt - 1) * 5)
 
         brief = await run_research(company_name, domain, meeting_title, attendees)
         logger.info(f"[RESEARCH] Result: {'BriefOutput received' if brief else 'None returned'}")
@@ -178,7 +183,21 @@ async def research_and_broadcast(
                 }))
 
     except Exception as e:
-        logger.error(f"[RESEARCH] Failed for {company_name}: {e}", exc_info=True)
+        logger.error(f"[RESEARCH] Failed for {company_name} (attempt {attempt}): {e}", exc_info=True)
+
+        # Retry with exponential backoff
+        if attempt < max_attempts:
+            wait = 10 * attempt  # 10s, 20s
+            logger.info(f"[RESEARCH] Retrying in {wait}s...")
+            await asyncio.sleep(wait)
+            await research_and_broadcast(
+                meeting_id, company_name, domain,
+                meeting_title, attendees,
+                attempt=attempt + 1, max_attempts=max_attempts,
+            )
+            return
+
+        # All attempts exhausted — mark as error
         try:
             async for session in get_session():
                 meeting = await session.get(Meeting, meeting_id)
@@ -219,6 +238,13 @@ async def calendar_poll_loop():
                 for event in events:
                     existing = await session.get(Meeting, event.get("id", ""))
                     if existing:
+                        # Retry if previous research errored out
+                        if existing.brief_status == BriefStatus.error and existing.company_name:
+                            logger.info(f"[POLL] Retrying errored meeting: {existing.title}")
+                            asyncio.create_task(research_and_broadcast(
+                                existing.id, existing.company_name, existing.domain,
+                                existing.title, existing.attendees,
+                            ))
                         skip_count += 1
                         continue
 
