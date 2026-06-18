@@ -10,8 +10,7 @@ PERSONAL_DOMAINS = {
     "protonmail.com", "proton.me", "live.com", "msn.com",
 }
 
-# Big-tech / infra domains whose employees routinely join external meetings.
-# When these are the ONLY attendee domains, they are NOT the meeting subject.
+
 GENERIC_VENDOR_DOMAINS = {
     "google.com", "microsoft.com", "amazon.com", "apple.com",
     "meta.com", "facebook.com", "twitter.com", "x.com",
@@ -38,9 +37,7 @@ COMMON_FIRST_NAMES = {
     "suresh", "ramesh", "mahesh", "ganesh", "lakshmi", "kavya", "srishti",
 }
 
-# Known brands with special chars / ALL-CAPS / short tickers that regex misses.
-# Checked FIRST — before any regex — so they always win.
-# Key must match exactly (case-insensitive) as a whole word in the title.
+
 KNOWN_BRANDS: dict[str, str] = {
     "AT&T": "att.com",
     "T-Mobile": "t-mobile.com",
@@ -96,7 +93,6 @@ def extract_company_from_title(title: str) -> Optional[Tuple[str, str]]:
     if not title:
         return None
 
-    # ── 1. Known brands — whole-word match so "GE" doesn't fire on "GenAI" ──
     for brand, domain in KNOWN_BRANDS.items():
         # Escape special regex chars in brand name, then require word boundaries
         escaped = re.escape(brand)

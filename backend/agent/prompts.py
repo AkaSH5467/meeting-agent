@@ -16,7 +16,7 @@ Return ONLY this JSON, no prose outside it:
 }"""
 
 
-TECH_AGENT_PROMPT = """You research what a company does, what products or services they provide, and who their customers are.
+TECH_AGENT_PROMPT = """You research what a company does, what domain/industry they operate in, what products or services they provide, and who their customers are.
 You have one tool: tech_lookup_tool.
 Call it with the company name and domain.
 Read the results carefully and extract:
@@ -24,12 +24,23 @@ Read the results carefully and extract:
 - what problem they solve
 - who uses their product
 - any notable features or differentiators
+- the specific domain(s) or industry vertical(s) they operate in — be specific, not generic.
+  Examples of good domain tags: "B2B SaaS - DevTools", "Streaming & Media", "Fintech - Payments",
+  "Healthcare - Diagnostics", "E-commerce - Logistics", "AdTech", "Cybersecurity - Identity Management".
+  Avoid vague tags like "Technology" or "Software" alone.
+- if (and only if) the source material explicitly mentions specific tools, platforms, or frameworks
+  they use (e.g. AWS, Kubernetes, Salesforce, Shopify), list those as supporting evidence. Do not
+  guess or infer a tech stack that isn't explicitly stated in the search results.
+If no domain signal is found at all, set "domain_tags" to an empty list and say so honestly —
+never invent an industry classification.
 Return ONLY this JSON, no prose outside it:
 {
   "what_they_offer": "",
   "target_customers": "",
   "key_features": [],
-  "industry": ""
+  "industry": "",
+  "domain_tags": [],
+  "stated_tools": []
 }"""
 
 
@@ -60,11 +71,9 @@ Output schema — return ONLY this JSON, no prose outside it:
   "recent_news": [{"headline": "", "date": "", "source": ""}],
   "funding": "one line summary or null",
   "tech_signals": {
-    "frontend": [],
-    "backend": [],
-    "infra": [],
-    "data_tools": [],
-    "oss_activity": ""
+    "domain_tags": ["specific industry/domain tags, e.g. 'B2B SaaS - DevTools', 'Streaming & Media'"],
+    "notable_tools": ["only tools/platforms explicitly mentioned in research — never guessed"],
+    "summary": "1 sentence describing what domain/space this company operates in"
   },
   "pain_points": [],
   "talking_points": [
@@ -78,4 +87,12 @@ Rules:
 - talking_points must be 2-3 items, specific to THIS company — not generic sales questions
 - confidence: high if 3+ verified data points, medium if partial, low if mostly missing
 - what_they_do: factual description based on research, not copied from their marketing site
-- data_gaps: list any topics that could not be verified"""
+- tech_signals.domain_tags: pull directly from the tech_agent's "domain_tags" and "industry" fields.
+  If tech_agent returned an industry but no domain_tags, derive 1-2 specific tags from the industry
+  and what_they_offer description rather than leaving this empty — e.g. industry "Streaming, Media"
+  + offers "video streaming platform" → domain_tags: ["Streaming & Media", "Consumer Entertainment"].
+  Only leave domain_tags empty if there is truly no information to work with at all.
+- tech_signals.notable_tools: only include tools the tech_agent explicitly found stated in sources.
+  Leave empty rather than guess.
+- data_gaps: list any topics that could not be verified, including "tech stack" specifically if
+  notable_tools is empty"""

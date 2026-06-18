@@ -7,11 +7,9 @@ export interface RecentNews {
 }
 
 export interface TechSignals {
-  frontend: string[];
-  backend: string[];
-  infra: string[];
-  data_tools: string[];
-  oss_activity: string;
+  domain_tags: string[];
+  notable_tools: string[];
+  summary: string;
 }
 
 export interface TalkingPoint {

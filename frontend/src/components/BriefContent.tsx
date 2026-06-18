@@ -11,6 +11,13 @@ const confidenceColors = {
 };
 
 export function BriefContent({ brief }: { brief: BriefOutput }) {
+  // Safe defaults — older briefs saved before the schema change may be
+  // missing these fields entirely, which would otherwise crash the render.
+  const techSignals = brief.tech_signals ?? { domain_tags: [], notable_tools: [], summary: "" };
+  const domainTags = techSignals.domain_tags ?? [];
+  const notableTools = techSignals.notable_tools ?? [];
+  const techSummary = techSignals.summary ?? "";
+
   return (
     <Card className="mt-3">
       <CardContent className="pt-3 space-y-4">
@@ -43,49 +50,35 @@ export function BriefContent({ brief }: { brief: BriefOutput }) {
 
         <div>
           <h4 className="font-medium text-sm text-muted-foreground mb-2">
-            Tech Signals
+            Domain & Tech Signals
           </h4>
           <div className="space-y-3 text-sm">
-            {brief.tech_signals.frontend.length > 0 && (
+            {techSummary && (
+              <p className="text-foreground">{techSummary}</p>
+            )}
+            {domainTags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {domainTags.map((tag, i) => (
+                  <Badge key={i} variant="outline" className="text-xs font-normal">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            )}
+            {notableTools.length > 0 && (
               <div>
-                <span className="font-medium">Frontend:</span>{" "}
+                <span className="font-medium">Notable tools:</span>{" "}
                 <span className="text-foreground">
-                  {brief.tech_signals.frontend.join(", ")}
+                  {notableTools.join(", ")}
                 </span>
               </div>
             )}
-            {brief.tech_signals.backend.length > 0 && (
-              <div>
-                <span className="font-medium">Backend:</span>{" "}
-                <span className="text-foreground">
-                  {brief.tech_signals.backend.join(", ")}
-                </span>
-              </div>
-            )}
-            {brief.tech_signals.infra.length > 0 && (
-              <div>
-                <span className="font-medium">Infrastructure:</span>{" "}
-                <span className="text-foreground">
-                  {brief.tech_signals.infra.join(", ")}
-                </span>
-              </div>
-            )}
-            {brief.tech_signals.data_tools.length > 0 && (
-              <div>
-                <span className="font-medium">Data Tools:</span>{" "}
-                <span className="text-foreground">
-                  {brief.tech_signals.data_tools.join(", ")}
-                </span>
-              </div>
-            )}
-            {brief.tech_signals.oss_activity && (
-              <div>
-                <span className="font-medium">OSS Activity:</span>{" "}
-                <span className="text-foreground">
-                  {brief.tech_signals.oss_activity}
-                </span>
-              </div>
-            )}
+            {domainTags.length === 0 &&
+              !techSummary && (
+                <p className="text-xs text-muted-foreground italic">
+                  No domain signals found for this company.
+                </p>
+              )}
           </div>
         </div>
 
